@@ -8,6 +8,7 @@ The Song's Group Treasure project allows you to create song PDFs for the Scuola 
 1. Clone the repository: `git clone https://github.com/nicoloamigoni/cantiPy`
 2. Navigate to the project directory: `cd cantiPy`
 3. Install the required dependencies: `pip install -r requirements.txt`
+4. Install tkinter. On Debian, `sudo apt-get install python3-tk`. For Windows, google it I don't have Windows.
 
 ## Usage
 1. Open a terminal and navigate to the project directory.
