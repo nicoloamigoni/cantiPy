@@ -43,10 +43,10 @@ def open_create_song_window(self, title="", author="", lyrics="", translation=""
 
 def save_song(self, song):
     title = self.title_entry.get()
-    author = self.author_entry.get()
+    author = self.author_entry.get() if self.author_entry.get() else None
     lyrics = self.lyrics_text.get("1.0", tk.END).strip()
     translation = self.translation_text.get("1.0", tk.END).strip()
-    if title and author and lyrics:
+    if title and lyrics:
         if song is not None:
             song.title = title
             song.author = author
@@ -61,9 +61,10 @@ def save_song(self, song):
         else:
             new_song = songsdb.new_song(title, author, lyrics, translation)
             if(new_song):
+                self.selected_songs_listbox.delete(0, tk.END)
                 messagebox.showinfo("Success", "Song updated successfully!")
                 self.create_window.destroy()
-                self.selected_songs_listbox.delete(0, tk.END)
+
             else:
                 messagebox.showerror("Error", "Il testo e la traduzione devono avere lo stesso numero di paragrafi.")
     else:
