@@ -18,8 +18,16 @@ def get_song_text(url):
         # Parse the HTML content using BeautifulSoup
         soup = BeautifulSoup(response.content, "html.parser")
 
+
+        #remove div class="tagscloud" from lyrics_div before proceeding
+        tagscloud = soup.find("div", class_="tagscloud")
+        if tagscloud:
+            tagscloud.decompose()
+
+
         # Find the lyrics section
         lyrics_div = soup.find("div", class_="testo", itemprop="lyrics")
+        print(lyrics_div,"\n\n\n")
         if lyrics_div:
             lyrics_p_tags = lyrics_div.find_all("p")
             for p in lyrics_p_tags:
@@ -28,6 +36,7 @@ def get_song_text(url):
 
         # Find the translation section
         translation_div = soup.find("div", class_="trad", itemprop="translationOfWork")
+        print(translation_div,"\n\n\n")
         if translation_div:
             translation_p_tags = translation_div.find_all("p")
             for p in translation_p_tags:
@@ -37,6 +46,7 @@ def get_song_text(url):
                 translation_paragraphs.append("\n".join(translation_div.strings))
             # Remove "Traduzione:" prefix from the first paragraph, if present
             translation_paragraphs[0] = re.sub(r"^Traduzione:", "", translation_paragraphs[0]).strip()
+            translation_paragraphs[0] = re.sub(r"^Traduzione[^\n]*(\r)*\n", "", translation_paragraphs[0]).strip()
 
     return text_paragraphs, translation_paragraphs
 
@@ -47,8 +57,13 @@ def update_database_with_new_songs(songs):
             existing_songs = Song.load_songs_from_json(f.read())
     except FileNotFoundError:
         existing_songs = []    
+    try:
+        with open("lib/exclusions.json", "r") as f:
+            exclusions = json.load(f)
+    except FileNotFoundError:
+        exclusions = []
     existing_links = [song.link for song in existing_songs]
-    new_songs = [song for song in songs if song.link not in existing_links]
+    new_songs = [song for song in songs if song.link not in existing_links and song.link not in exclusions]
 
     print("[Info] Found " + str(len(new_songs)) + " new songs.")
     i = 1
@@ -98,5 +113,6 @@ def get_songs_from_le3():
             print("[Info] Failed to retrieve the song list.")
     except requests.exceptions.RequestException as e:
         print("[Info] No connection with le3.it, database not updated.")
+
 
 
