@@ -14,13 +14,26 @@ def get_songs():
     return songs
 
 def delete_song(song):
-    with open("lib/songs.json", "r") as f:
-        existing_songs = Song.load_songs_from_json(f.read())
+    try:
+        with open("lib/songs.json", "r") as f:
+            existing_songs = Song.load_songs_from_json(f.read())
+        
+        existing_songs = [s for s in existing_songs if s.link != song.link]
+        
+        with open("lib/songs.json", "w") as f:
+            json.dump([song.__dict__ for song in existing_songs], f, indent=4)
+    except FileNotFoundError:
+        pass
     
-    existing_songs = [s for s in existing_songs if s.link != song.link]
-    
-    with open("lib/songs.json", "w") as f:
-        json.dump([song.__dict__ for song in existing_songs], f, indent=4)
+    try:
+        with open("lib/exclusions.json", "r") as f:
+            exclusions = json.load(f)
+        
+        exclusions.append(song.link)
+        with open("lib/exclusions.json", "w") as f:
+            json.dump(exclusions, f, indent=4)
+    except FileNotFoundError:
+        pass
 
 
 def update_song(song):
