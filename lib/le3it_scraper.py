@@ -48,6 +48,14 @@ def get_song_text(url):
 
     return text_paragraphs, translation_paragraphs
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from tqdm import tqdm
+
+def process_song(song):
+    text, translation = get_song_text(song.link)
+    song.set_text(text)
+    song.set_translation(translation)
+    return song
 
 def update_database_with_new_songs(songs):
     try:
@@ -64,17 +72,21 @@ def update_database_with_new_songs(songs):
     new_songs = [song for song in songs if song.link not in existing_links and song.link not in exclusions]
 
     print("[Info] Found " + str(len(new_songs)) + " new songs.")
-    i = 1
-    for song in new_songs:
-        text, translation = get_song_text(song.link)
-        song.set_text(text)
-        song.set_translation(translation)
-        existing_songs.append(song)
-        print("[Info] Song " + str(i) + " of " + str(len(new_songs)) + " added to the database.")
-        i += 1
+    if len(new_songs) == 0:
+        return
+    with ThreadPoolExecutor() as executor:
+    # Submit all tasks to the executor
+        future_to_song = {executor.submit(process_song, song): song for song in new_songs}
+        i = 1
+        with tqdm(total=len(new_songs), desc="Downloading Songs", unit=" songs") as pbar:
+            for future in as_completed(future_to_song):
+                song = future.result()
+                existing_songs.append(song)
+                pbar.update(1)
+                i += 1
 
-        with open("lib/songs.json", "w") as f:
-            json.dump([song.__dict__ for song in existing_songs], f, indent=4)
+                with open("lib/songs.json", "w") as f:
+                    json.dump([song.__dict__ for song in existing_songs], f, indent=4)
 
 
 def get_songs_from_le3():
