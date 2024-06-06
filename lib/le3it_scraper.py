@@ -27,7 +27,6 @@ def get_song_text(url):
 
         # Find the lyrics section
         lyrics_div = soup.find("div", class_="testo", itemprop="lyrics")
-        print(lyrics_div,"\n\n\n")
         if lyrics_div:
             lyrics_p_tags = lyrics_div.find_all("p")
             for p in lyrics_p_tags:
@@ -36,7 +35,6 @@ def get_song_text(url):
 
         # Find the translation section
         translation_div = soup.find("div", class_="trad", itemprop="translationOfWork")
-        print(translation_div,"\n\n\n")
         if translation_div:
             translation_p_tags = translation_div.find_all("p")
             for p in translation_p_tags:
