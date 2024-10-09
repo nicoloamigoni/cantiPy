@@ -3,11 +3,18 @@ from bs4 import BeautifulSoup
 import re
 from lib.songclass import Song
 import json
+import time
 
 
 def get_song_text(url):
     # Make a GET request to the URL
     response = requests.get(url)
+    # do while in python
+    while response.status_code != 200:
+        print("[Info] Network error, too many connections. Retrying in 10 seconds.")
+        time.sleep(10)
+        response = requests.get(url)
+
 
     # Initialize the lists for text and translations
     text_paragraphs = []
@@ -45,7 +52,9 @@ def get_song_text(url):
             # Remove "Traduzione:" prefix from the first paragraph, if present
             translation_paragraphs[0] = re.sub(r"^Traduzione:", "", translation_paragraphs[0]).strip()
             translation_paragraphs[0] = re.sub(r"^Traduzione[^\n]*(\r)*\n", "", translation_paragraphs[0]).strip()
-
+    else:
+        print("[Info] Failed to retrieve the song text.")
+        print("[Error] Status code: " + str(response)   )
     return text_paragraphs, translation_paragraphs
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -74,7 +83,7 @@ def update_database_with_new_songs(songs):
     print("[Info] Found " + str(len(new_songs)) + " new songs.")
     if len(new_songs) == 0:
         return
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
     # Submit all tasks to the executor
         future_to_song = {executor.submit(process_song, song): song for song in new_songs}
         i = 1
@@ -123,6 +132,5 @@ def get_songs_from_le3():
             print("[Info] Failed to retrieve the song list.")
     except requests.exceptions.RequestException as e:
         print("[Info] No connection with le3.it, database not updated.")
-
 
 

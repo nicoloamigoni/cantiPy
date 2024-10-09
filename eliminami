@@ -1,0 +1,29 @@
+function readJsonFile() {
+    // Specify the folder name and the file name
+    var folderName = "canti_backend_DONOTDELETE";
+    var fileName = "songs.json";
+
+    // Get the folder by name
+    var folders = DriveApp.getFoldersByName(folderName);
+    if (!folders.hasNext()) {
+        return [];
+    }
+    var folder = folders.next();
+
+    var files = folder.getFilesByName(fileName);
+    if (!files.hasNext()) {
+        return [];
+    }
+    var file = files.next();
+    var fileContent = file.getBlob().getDataAsString();
+    var songs = JSON.parse(fileContent);
+    Logger.log(songs);
+
+    return songs;
+}
+
+function getSongs() {
+    var songs = readJsonFile();
+    Logger.log(songs)
+    return songs;
+}

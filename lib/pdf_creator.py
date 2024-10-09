@@ -5,7 +5,7 @@ import os
 def create_pdf(songs):
     check = True
     for song in songs:
-        if(not(len(song.translation)==0 or song.translation[0]=="") and len(song.text) != len(song.translation)):
+        if(song.translation and not(len(song.translation)==0 or song.translation[0]=="") and len(song.text) != len(song.translation)):
             print("[ERROR] Text and translation have different number of paragraphs for song ", song.title)
             check = False
         print("[INFO] Adding ", song.title)
@@ -62,7 +62,8 @@ def create_content(songs, pagebreak = False):
 
     for song in songs:
         song.text = [line.replace("\n", "<br>") for line in song.text]
-        song.translation = [line.replace("\n", "<br>") for line in song.translation]
+
+        
 
         html_content += f"<h1><b>{song.title}</b>"
         if song.author:
@@ -70,6 +71,8 @@ def create_content(songs, pagebreak = False):
         html_content += "</h1>"
         
         if song.translation:
+            song.translation = [line.replace("\n", "<br>") for line in song.translation]
+            print("in")
             html_content += "<table>"
             for original, translation in zip(song.text, song.translation):
                 html_content += f"<tr><td>{original}<br><br></td><td style='width:10px'></td><td><i>{translation}<br><br></i></td></tr>"

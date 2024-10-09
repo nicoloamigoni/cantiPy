@@ -40,7 +40,7 @@ def update_song(song):
     with open("lib/songs.json", "r") as f:
         existing_songs = Song.load_songs_from_json(f.read())
     
-    if(not(len(song.translation)==0 or song.translation[0]=="") and len(song.text) != len(song.translation)):
+    if(song.translation and not(len(song.translation)==0 or len(song.translation[0])<=1) and len(song.text) != len(song.translation)):
         return False
 
     for i, s in enumerate(existing_songs):
@@ -55,15 +55,17 @@ def update_song(song):
 def new_song(title, author, lyrics, translation):
     
     id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=16))
-    song = Song(title, author, id, translation != "")
-
+    song = Song(title, author, id, len(translation) >= 1)
+    
     lyrics = lyrics.split("\n\n")
     translation = translation.split("\n\n")
 
     song.set_text(lyrics)
-    song.set_translation(translation)
+    if len(translation)>1:
+        song.set_translation(translation)
 
-    if translation!="" and len(lyrics) != len(translation):
+    if len(translation)>2 and len(lyrics) != len(translation):
+        print(len(translation))
         return None
     
     with open("lib/songs.json", "r") as f:
